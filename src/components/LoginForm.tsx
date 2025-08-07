@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, Code, User } from "lucide-react";
+import { Mail, Lock, BookOpen, User } from "lucide-react";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -29,15 +29,15 @@ export const LoginForm = () => {
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="p-4 bg-gradient-primary rounded-2xl shadow-glow">
-              <Code className="h-8 w-8 text-white" />
+              <BookOpen className="h-8 w-8 text-white" />
             </div>
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Computer Science Portal
+              English Department Portal
             </h1>
             <p className="text-muted-foreground text-base">
-              Sign in to access your academic resources
+              Sign in to access your literature and writing resources
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const LoginForm = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="student@university.edu"
+                    placeholder="student@english.edu"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-background border-border focus:border-primary focus:ring-primary/20 transition-smooth"
@@ -140,7 +140,7 @@ export const LoginForm = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  New to CS Portal?
+                  New to English Department?
                 </span>
               </div>
             </div>
@@ -151,7 +151,7 @@ export const LoginForm = () => {
                 href="#"
                 className="text-primary hover:text-primary-hover transition-fast font-medium"
               >
-                Create your student account →
+                Create your English student account →
               </a>
             </div>
           </CardContent>
