@@ -17,7 +17,8 @@ export const LoginForm = () => {
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
-      console.log("Login attempted with:", { email, password });
+      // Redirect to home page after successful login
+      window.location.href = '/home';
     }, 1500);
   };
 
