@@ -28,42 +28,42 @@ export const HomePage = () => {
   const courses = [
     {
       id: 1,
-      name: "Data Structures & Algorithms",
-      code: "CS 301",
-      progress: 75,
-      nextClass: "Today, 2:00 PM",
-      instructor: "Dr. Smith",
-      icon: Database,
+      name: "Borrowed Books",
+      code: "My Loans",
+      progress: 40,
+      nextClass: "2 due in 3 days",
+      instructor: "View and renew",
+      icon: BookOpen,
       color: "bg-blue-500"
     },
     {
       id: 2,
-      name: "Machine Learning",
-      code: "CS 410",
-      progress: 60,
-      nextClass: "Tomorrow, 10:00 AM",
-      instructor: "Prof. Johnson",
-      icon: Brain,
+      name: "Digital Library",
+      code: "E-Resources",
+      progress: 80,
+      nextClass: "New journals added",
+      instructor: "Access databases",
+      icon: Database,
       color: "bg-purple-500"
     },
     {
       id: 3,
-      name: "Software Engineering",
-      code: "CS 350",
-      progress: 85,
-      nextClass: "Wed, 1:00 PM",
-      instructor: "Dr. Wilson",
-      icon: GitBranch,
+      name: "Research Guides",
+      code: "Guides",
+      progress: 60,
+      nextClass: "Citation styles, subject guides",
+      instructor: "Explore guides",
+      icon: Brain,
       color: "bg-green-500"
     },
     {
       id: 4,
-      name: "Operating Systems",
-      code: "CS 330",
-      progress: 45,
-      nextClass: "Thu, 9:00 AM",
-      instructor: "Prof. Davis",
-      icon: Terminal,
+      name: "Study Rooms",
+      code: "Reservations",
+      progress: 30,
+      nextClass: "Rooms available today",
+      instructor: "Book a room",
+      icon: Users,
       color: "bg-orange-500"
     }
   ];
@@ -71,25 +71,25 @@ export const HomePage = () => {
   const assignments = [
     {
       id: 1,
-      title: "Binary Search Tree Implementation",
-      course: "CS 301",
+      title: "2 books due soon",
+      course: "Loans",
       dueDate: "2 days",
       status: "in-progress",
       priority: "high"
     },
     {
       id: 2,
-      title: "Neural Network Project",
-      course: "CS 410",
-      dueDate: "5 days",
+      title: "Library workshop: Research basics",
+      course: "Events",
+      dueDate: "Friday",
       status: "not-started",
       priority: "medium"
     },
     {
       id: 3,
-      title: "System Call Analysis",
-      course: "CS 330",
-      dueDate: "1 week",
+      title: "Membership renewed",
+      course: "Account",
+      dueDate: "-",
       status: "completed",
       priority: "low"
     }
@@ -97,19 +97,19 @@ export const HomePage = () => {
 
   const upcomingEvents = [
     {
-      title: "Algorithm Design Workshop",
-      time: "3:00 PM",
-      location: "Room 201"
+      title: "Citation Styles 101",
+      time: "Today 3:00 PM",
+      location: "Library Hall"
     },
     {
-      title: "Career Fair",
+      title: "Digital Resources Orientation",
       time: "Tomorrow",
-      location: "Student Center"
+      location: "Computer Lab"
     },
     {
-      title: "ML Research Seminar",
+      title: "Author Talk: Modern Fiction",
       time: "Friday 2:00 PM",
-      location: "Online"
+      location: "Auditorium"
     }
   ];
 
@@ -121,11 +121,11 @@ export const HomePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-gradient-primary rounded-lg shadow-glow">
-                <Code className="h-6 w-6 text-white" />
+                <BookOpen className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">CS Portal</h1>
-                <p className="text-sm text-muted-foreground">Computer Science Department</p>
+                <h1 className="text-xl font-bold text-foreground">MMMES College Library</h1>
+                <p className="text-sm text-muted-foreground">Welcome to your library</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -133,7 +133,7 @@ export const HomePage = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search courses, assignments..."
+                  placeholder="Search catalog, books, journals..."
                   className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
                 />
               </div>
@@ -161,17 +161,17 @@ export const HomePage = () => {
                 Welcome back, Alex! 👋
               </h2>
               <p className="text-muted-foreground">
-                Ready to continue your computer science journey? Current time: {currentTime}
+                Find books, journals, and manage your loans. Current time: {currentTime}
               </p>
             </div>
             <div className="flex items-center space-x-4">
               <Card className="bg-gradient-card border-0 shadow-soft">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2">
-                    <Trophy className="h-5 w-5 text-accent" />
+                    <BookOpen className="h-5 w-5 text-accent" />
                     <div>
-                      <p className="text-sm font-medium">GPA</p>
-                      <p className="text-lg font-bold text-accent">3.85</p>
+                      <p className="text-sm font-medium">Active Loans</p>
+                      <p className="text-lg font-bold text-accent">2</p>
                     </div>
                   </div>
                 </CardContent>
@@ -185,7 +185,7 @@ export const HomePage = () => {
           <div className="lg:col-span-2 space-y-8">
             {/* Courses Grid */}
             <section>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Your Courses</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Library Shortcuts</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {courses.map((course) => {
                   const IconComponent = course.icon;
@@ -222,7 +222,7 @@ export const HomePage = () => {
 
             {/* Assignments */}
             <section>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Recent Assignments</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Library Notices</h3>
               <Card className="bg-gradient-card border-0 shadow-soft">
                 <CardContent className="p-6">
                   <div className="space-y-4">
@@ -310,25 +310,25 @@ export const HomePage = () => {
             {/* Study Groups */}
             <Card className="bg-gradient-card border-0 shadow-soft">
               <CardHeader>
-                <CardTitle className="text-lg">Study Groups</CardTitle>
+                <CardTitle className="text-lg">Library Services</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <Users className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">Algorithms Study Group</p>
-                    <p className="text-sm text-muted-foreground">5 members active</p>
+                    <p className="font-medium text-foreground">Ask a Librarian</p>
+                    <p className="text-sm text-muted-foreground">Chat now</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <Users className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">ML Research Circle</p>
-                    <p className="text-sm text-muted-foreground">8 members active</p>
+                    <p className="font-medium text-foreground">Citation Help Desk</p>
+                    <p className="text-sm text-muted-foreground">View times</p>
                   </div>
                 </div>
                 <Button variant="outline" className="w-full mt-4">
-                  Join New Group
+                  View All Services
                 </Button>
               </CardContent>
             </Card>
