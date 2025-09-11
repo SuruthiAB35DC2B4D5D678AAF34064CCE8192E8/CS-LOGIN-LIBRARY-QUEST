@@ -24,68 +24,26 @@ import {
 
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
-  const handleServiceClick = (serviceId: number, serviceName: string) => {
-    switch (serviceId) {
-      case 1: // Borrowed Books
-        window.open('/borrowed-books', '_blank');
-        break;
-      case 2: // Digital Library
-        window.open('/digital-library', '_blank');
-        break;
-      case 3: // Research Guides
-        window.open('/research-guides', '_blank');
-        break;
-      case 4: // Study Rooms
-        window.open('/study-rooms', '_blank');
-        break;
-      default:
-        console.log(`Opening ${serviceName}`);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Mock search results - in real app this would be an API call
+      const mockResults = [
+        { title: `${searchQuery} - Programming Guide`, author: "GeeksforGeeks" },
+        { title: `${searchQuery} - Tutorial`, author: "GeeksforGeeks" },
+        { title: `${searchQuery} - Practice Problems`, author: "GeeksforGeeks" }
+      ];
+      setSearchResults(mockResults);
     }
   };
 
-  const courses = [
-    {
-      id: 1,
-      name: "Borrowed Books",
-      code: "My Loans",
-      progress: 40,
-      nextClass: "2 due in 3 days",
-      instructor: "View and renew",
-      icon: BookOpen,
-      color: "bg-blue-500"
-    },
-    {
-      id: 2,
-      name: "Digital Library",
-      code: "E-Resources",
-      progress: 80,
-      nextClass: "New journals added",
-      instructor: "Access databases",
-      icon: Database,
-      color: "bg-purple-500"
-    },
-    {
-      id: 3,
-      name: "Research Guides",
-      code: "Guides",
-      progress: 60,
-      nextClass: "Citation styles, subject guides",
-      instructor: "Explore guides",
-      icon: Brain,
-      color: "bg-green-500"
-    },
-    {
-      id: 4,
-      name: "Study Rooms",
-      code: "Reservations",
-      progress: 30,
-      nextClass: "Rooms available today",
-      instructor: "Book a room",
-      icon: Users,
-      color: "bg-orange-500"
-    }
-  ];
+  const handleBookClick = (bookTitle: string) => {
+    window.open('https://www.geeksforgeeks.org/', '_blank');
+  };
+
 
   const assignments = [
     {
@@ -161,14 +119,16 @@ export const HomePage = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search catalog, books, journals..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
                 />
-              </div>
+              </form>
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -196,65 +156,31 @@ export const HomePage = () => {
                 Find books, journals, and manage your loans. Current time: {currentTime}
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            {searchResults.length > 0 && (
               <Card className="bg-gradient-card border-0 shadow-soft">
                 <CardContent className="p-4">
-                  <div className="flex items-center space-x-2">
-                    <BookOpen className="h-5 w-5 text-accent" />
-                    <div>
-                      <p className="text-sm font-medium">Active Loans</p>
-                      <p className="text-lg font-bold text-accent">2</p>
-                    </div>
+                  <h4 className="font-medium mb-3">Search Results</h4>
+                  <div className="space-y-2">
+                    {searchResults.map((book, index) => (
+                      <div 
+                        key={index}
+                        onClick={() => handleBookClick(book.title)}
+                        className="p-2 bg-background rounded-lg border border-border hover:bg-accent/10 cursor-pointer transition-smooth"
+                      >
+                        <p className="font-medium text-primary">{book.title}</p>
+                        <p className="text-sm text-muted-foreground">by {book.author}</p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Courses Grid */}
-            <section>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Library Shortcuts</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {courses.map((course) => {
-                  const IconComponent = course.icon;
-                  return (
-                    <Card 
-                      key={course.id} 
-                      className="bg-gradient-card border-0 shadow-soft hover:shadow-medium transition-smooth cursor-pointer"
-                      onClick={() => handleServiceClick(course.id, course.name)}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className={`p-2 ${course.color} rounded-lg`}>
-                            <IconComponent className="h-5 w-5 text-white" />
-                          </div>
-                          <Badge variant="secondary">{course.code}</Badge>
-                        </div>
-                        <CardTitle className="text-lg">{course.name}</CardTitle>
-                        <CardDescription>{course.instructor}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span>Progress</span>
-                            <span>{course.progress}%</span>
-                          </div>
-                          <Progress value={course.progress} className="h-2" />
-                        </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {course.nextClass}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </section>
 
             {/* Popular Books */}
             <section>
