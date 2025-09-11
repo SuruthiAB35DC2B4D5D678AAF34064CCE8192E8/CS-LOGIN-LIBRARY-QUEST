@@ -114,22 +114,35 @@ export const HomePage = () => {
     }
   ];
 
-  const upcomingEvents = [
-    {
-      title: "Citation Styles 101",
-      time: "Today 3:00 PM",
-      location: "Library Hall"
-    },
-    {
-      title: "Digital Resources Orientation",
-      time: "Tomorrow",
-      location: "Computer Lab"
-    },
-    {
-      title: "Author Talk: Modern Fiction",
-      time: "Friday 2:00 PM",
-      location: "Auditorium"
-    }
+  const libraryStats = {
+    totalBooks: 15420,
+    borrowedBooks: 2340,
+    availableBooks: 13080,
+    overdueBooks: 45
+  };
+
+  const departmentBorrowingStats = [
+    { department: "Computer Science", borrowed: 450, percentage: 19.2 },
+    { department: "Electronics", borrowed: 380, percentage: 16.2 },
+    { department: "Mechanical", borrowed: 320, percentage: 13.7 },
+    { department: "Civil", borrowed: 290, percentage: 12.4 },
+    { department: "Electrical", borrowed: 250, percentage: 10.7 },
+    { department: "Others", borrowed: 650, percentage: 27.8 }
+  ];
+
+  const popularBooks = [
+    { title: "Introduction to Algorithms", author: "Cormen, Leiserson", category: "Computer Science", available: 3, total: 8 },
+    { title: "Digital Electronics", author: "Morris Mano", category: "Electronics", available: 2, total: 6 },
+    { title: "Thermodynamics", author: "P.K. Nag", category: "Mechanical", available: 4, total: 7 },
+    { title: "Structural Analysis", author: "R.C. Hibbeler", category: "Civil", available: 1, total: 5 },
+    { title: "Power Systems", author: "C.L. Wadhwa", category: "Electrical", available: 5, total: 9 }
+  ];
+
+  const upcomingDeadlines = [
+    { student: "Arjun Kumar", book: "Data Structures", dueDate: "2 days", department: "CSE", isOverdue: false },
+    { student: "Priya Sharma", book: "Circuit Analysis", dueDate: "1 day", department: "ECE", isOverdue: false },
+    { student: "Rahul Singh", book: "Machine Design", dueDate: "Overdue by 3 days", department: "Mech", isOverdue: true },
+    { student: "Sneha Patel", book: "Concrete Technology", dueDate: "4 days", department: "Civil", isOverdue: false }
   ];
 
   return (
@@ -243,36 +256,64 @@ export const HomePage = () => {
               </div>
             </section>
 
-            {/* Assignments */}
+            {/* Popular Books */}
             <section>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Library Notices</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Popular Books</h3>
               <Card className="bg-gradient-card border-0 shadow-soft">
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {assignments.map((assignment) => (
-                      <div key={assignment.id} className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                    {popularBooks.map((book, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
                         <div className="flex items-center space-x-4">
                           <div className="p-2 bg-primary/10 rounded-lg">
-                            {assignment.status === 'completed' ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500" />
-                            ) : assignment.priority === 'high' ? (
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-foreground">{book.title}</h4>
+                            <p className="text-sm text-muted-foreground">by {book.author}</p>
+                            <Badge variant="outline" className="mt-1">{book.category}</Badge>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium text-green-500">{book.available} available</span>
+                            <span className="text-sm text-muted-foreground">/ {book.total} total</span>
+                          </div>
+                          <Progress value={(book.available / book.total) * 100} className="w-20 h-2 mt-1" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Return Deadlines */}
+            <section>
+              <h3 className="text-xl font-semibold text-foreground mb-4">Upcoming Return Deadlines</h3>
+              <Card className="bg-gradient-card border-0 shadow-soft">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {upcomingDeadlines.map((deadline, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            {deadline.isOverdue ? (
                               <AlertCircle className="h-5 w-5 text-red-500" />
                             ) : (
-                              <BookOpen className="h-5 w-5 text-primary" />
+                              <Clock className="h-5 w-5 text-primary" />
                             )}
                           </div>
                           <div>
-                            <h4 className="font-medium text-foreground">{assignment.title}</h4>
-                            <p className="text-sm text-muted-foreground">{assignment.course}</p>
+                            <h4 className="font-medium text-foreground">{deadline.student}</h4>
+                            <p className="text-sm text-muted-foreground">{deadline.book}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                          <Badge 
-                            variant={assignment.priority === 'high' ? 'destructive' : 'secondary'}
-                          >
-                            {assignment.priority}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">Due in {assignment.dueDate}</span>
+                          <Badge variant="outline">{deadline.department}</Badge>
+                          <span className={`text-sm font-medium ${deadline.isOverdue ? 'text-red-500' : 'text-muted-foreground'}`}>
+                            {deadline.dueDate}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -291,39 +332,68 @@ export const HomePage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Courses Enrolled</span>
-                  <span className="font-semibold">4</span>
+                  <span className="text-muted-foreground">Books Borrowed</span>
+                  <span className="font-semibold">2</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Assignments Due</span>
-                  <span className="font-semibold text-orange-500">2</span>
+                  <span className="text-muted-foreground">Due This Week</span>
+                  <span className="font-semibold text-orange-500">1</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Completed Projects</span>
-                  <span className="font-semibold text-green-500">12</span>
+                  <span className="text-muted-foreground">Books Reserved</span>
+                  <span className="font-semibold text-green-500">0</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Study Hours</span>
-                  <span className="font-semibold">156h</span>
+                  <span className="text-muted-foreground">Reading Hours</span>
+                  <span className="font-semibold">24h</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Upcoming Events */}
+            {/* Library Statistics */}
             <Card className="bg-gradient-card border-0 shadow-soft">
               <CardHeader>
-                <CardTitle className="text-lg">Upcoming Events</CardTitle>
+                <CardTitle className="text-lg">Library Overview</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {upcomingEvents.map((event, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="p-1 bg-primary/20 rounded">
-                      <Calendar className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground">{event.title}</p>
-                      <p className="text-sm text-muted-foreground">{event.time}</p>
-                      <p className="text-xs text-muted-foreground">{event.location}</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-background rounded-lg">
+                    <p className="text-2xl font-bold text-primary">{libraryStats.totalBooks.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Total Books</p>
+                  </div>
+                  <div className="text-center p-3 bg-background rounded-lg">
+                    <p className="text-2xl font-bold text-orange-500">{libraryStats.borrowedBooks.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Borrowed</p>
+                  </div>
+                  <div className="text-center p-3 bg-background rounded-lg">
+                    <p className="text-2xl font-bold text-green-500">{libraryStats.availableBooks.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Available</p>
+                  </div>
+                  <div className="text-center p-3 bg-background rounded-lg">
+                    <p className="text-2xl font-bold text-red-500">{libraryStats.overdueBooks}</p>
+                    <p className="text-sm text-muted-foreground">Overdue</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Department Borrowing Stats */}
+            <Card className="bg-gradient-card border-0 shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg">Borrowing by Department</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {departmentBorrowingStats.map((dept, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">{dept.department}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-muted-foreground">{dept.borrowed}</span>
+                      <div className="w-16 bg-background rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full" 
+                          style={{ width: `${dept.percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 ))}
