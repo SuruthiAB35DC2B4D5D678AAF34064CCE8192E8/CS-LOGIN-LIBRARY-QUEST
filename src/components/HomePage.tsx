@@ -25,6 +25,25 @@ import {
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
+  const handleServiceClick = (serviceId: number, serviceName: string) => {
+    switch (serviceId) {
+      case 1: // Borrowed Books
+        window.open('/borrowed-books', '_blank');
+        break;
+      case 2: // Digital Library
+        window.open('/digital-library', '_blank');
+        break;
+      case 3: // Research Guides
+        window.open('/research-guides', '_blank');
+        break;
+      case 4: // Study Rooms
+        window.open('/study-rooms', '_blank');
+        break;
+      default:
+        console.log(`Opening ${serviceName}`);
+    }
+  };
+
   const courses = [
     {
       id: 1,
@@ -190,7 +209,11 @@ export const HomePage = () => {
                 {courses.map((course) => {
                   const IconComponent = course.icon;
                   return (
-                    <Card key={course.id} className="bg-gradient-card border-0 shadow-soft hover:shadow-medium transition-smooth cursor-pointer">
+                    <Card 
+                      key={course.id} 
+                      className="bg-gradient-card border-0 shadow-soft hover:shadow-medium transition-smooth cursor-pointer"
+                      onClick={() => handleServiceClick(course.id, course.name)}
+                    >
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <div className={`p-2 ${course.color} rounded-lg`}>
