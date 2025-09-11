@@ -30,18 +30,49 @@ export const HomePage = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Mock search results - in real app this would be an API call
-      const mockResults = [
-        { title: `${searchQuery} - Programming Guide`, author: "GeeksforGeeks" },
-        { title: `${searchQuery} - Tutorial`, author: "GeeksforGeeks" },
-        { title: `${searchQuery} - Practice Problems`, author: "GeeksforGeeks" }
-      ];
+      const query = searchQuery.toLowerCase();
+      
+      // Technical/Programming subjects - redirect to GeeksforGeeks
+      const technicalTerms = ['programming', 'java', 'python', 'javascript', 'html', 'css', 'react', 'node', 'database', 'sql', 'algorithm', 'data structure', 'computer', 'software', 'coding', 'web development', 'machine learning', 'ai', 'artificial intelligence'];
+      
+      // General books, novels, religious texts, newspapers - redirect to Wikipedia
+      const generalTerms = ['story', 'novel', 'bible', 'quran', 'bhagavad gita', 'bagavat gita', 'hindu', 'dhina thanthi', 'newspaper', 'literature', 'fiction', 'poetry', 'biography', 'history', 'philosophy'];
+      
+      const isTechnical = technicalTerms.some(term => query.includes(term));
+      const isGeneral = generalTerms.some(term => query.includes(term));
+      
+      let mockResults = [];
+      
+      if (isTechnical) {
+        mockResults = [
+          { title: `${searchQuery} - Programming Guide`, author: "GeeksforGeeks", type: "technical" },
+          { title: `${searchQuery} - Tutorial`, author: "GeeksforGeeks", type: "technical" },
+          { title: `${searchQuery} - Practice Problems`, author: "GeeksforGeeks", type: "technical" }
+        ];
+      } else if (isGeneral) {
+        mockResults = [
+          { title: `${searchQuery} - Encyclopedia`, author: "Wikipedia", type: "general" },
+          { title: `${searchQuery} - Reference`, author: "Wikipedia", type: "general" },
+          { title: `${searchQuery} - Article`, author: "Wikipedia", type: "general" }
+        ];
+      } else {
+        // Default to general search for unknown terms
+        mockResults = [
+          { title: `${searchQuery} - Encyclopedia`, author: "Wikipedia", type: "general" },
+          { title: `${searchQuery} - Reference`, author: "Wikipedia", type: "general" }
+        ];
+      }
+      
       setSearchResults(mockResults);
     }
   };
 
-  const handleBookClick = (bookTitle: string) => {
-    window.open('https://www.geeksforgeeks.org/', '_blank');
+  const handleBookClick = (book: any) => {
+    if (book.type === "technical") {
+      window.open(`https://www.geeksforgeeks.org/${searchQuery.toLowerCase().replace(/\s+/g, '-')}/`, '_blank');
+    } else {
+      window.open(`https://en.wikipedia.org/wiki/${searchQuery.replace(/\s+/g, '_')}`, '_blank');
+    }
   };
 
 
@@ -164,7 +195,7 @@ export const HomePage = () => {
                     {searchResults.map((book, index) => (
                       <div 
                         key={index}
-                        onClick={() => handleBookClick(book.title)}
+                        onClick={() => handleBookClick(book)}
                         className="p-2 bg-background rounded-lg border border-border hover:bg-accent/10 cursor-pointer transition-smooth"
                       >
                         <p className="font-medium text-primary">{book.title}</p>
