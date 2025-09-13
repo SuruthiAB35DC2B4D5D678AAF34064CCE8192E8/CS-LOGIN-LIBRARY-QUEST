@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { 
   Code, 
@@ -20,7 +21,8 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Newspaper
+  Newspaper,
+  ChevronDown
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
 
@@ -178,14 +180,80 @@ export const HomePage = () => {
                   className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
                 />
               </form>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => window.open('https://www.thehindu.com/', '_blank')}
-                title="Latest Indian News"
-              >
-                <Newspaper className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="lg"
+                    className="bg-gradient-primary text-white hover:bg-gradient-secondary shadow-glow"
+                    title="Latest News"
+                  >
+                    <Newspaper className="h-6 w-6 mr-2" />
+                    News
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://www.thehindu.com/', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    The Hindu (English)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://www.hindustantimes.com/', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Hindustan Times (English)
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://www.dinamalar.com/', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Dinamalar (Tamil)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://www.dinamani.com/', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Dinamani (Tamil)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://www.dhinathanthi.com/', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Dhina Thanthi (Tamil)
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://timesofindia.indiatimes.com/city/chennai', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Chennai News (English)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://timesofindia.indiatimes.com/city/madurai', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Madurai News (English)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.open('https://timesofindia.indiatimes.com/city/coimbatore', '_blank')}
+                    className="cursor-pointer"
+                  >
+                    <Newspaper className="h-4 w-4 mr-2" />
+                    Coimbatore News (English)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
