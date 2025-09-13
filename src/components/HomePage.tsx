@@ -19,7 +19,8 @@ import {
   Users,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Newspaper
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
 
@@ -177,6 +178,14 @@ export const HomePage = () => {
                   className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
                 />
               </form>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => window.open('https://www.thehindu.com/', '_blank')}
+                title="Latest Indian News"
+              >
+                <Newspaper className="h-5 w-5" />
+              </Button>
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
