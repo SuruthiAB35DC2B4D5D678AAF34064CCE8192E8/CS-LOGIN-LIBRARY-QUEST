@@ -169,7 +169,7 @@ export const HomePage = () => {
                 <p className="text-sm text-muted-foreground">Welcome to your library</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -177,15 +177,16 @@ export const HomePage = () => {
                   placeholder="Search catalog, books, journals..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
+                  className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth w-80"
                 />
               </form>
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="lg"
-                    className="bg-gradient-primary text-white hover:bg-gradient-secondary shadow-glow"
+                    className="bg-gradient-primary text-white hover:bg-gradient-secondary shadow-glow px-4 py-2"
                     title="Latest News"
                   >
                     <Newspaper className="h-6 w-6 mr-2" />
@@ -193,17 +194,17 @@ export const HomePage = () => {
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuContent align="end" className="w-64 bg-card border border-border shadow-lg z-50">
                   <DropdownMenuItem 
                     onClick={() => window.open('https://www.thehindu.com/', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     The Hindu (English)
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => window.open('https://www.hindustantimes.com/', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Hindustan Times (English)
@@ -211,21 +212,21 @@ export const HomePage = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => window.open('https://www.dinamalar.com/', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Dinamalar (Tamil)
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => window.open('https://www.dinamani.com/', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Dinamani (Tamil)
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => window.open('https://www.dhinathanthi.com/', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Dhina Thanthi (Tamil)
@@ -233,34 +234,54 @@ export const HomePage = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => window.open('https://timesofindia.indiatimes.com/city/chennai', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Chennai News (English)
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => window.open('https://timesofindia.indiatimes.com/city/madurai', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Madurai News (English)
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => window.open('https://timesofindia.indiatimes.com/city/coimbatore', '_blank')}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Newspaper className="h-4 w-4 mr-2" />
                     Coimbatore News (English)
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="ghost" size="icon">
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="hover:bg-accent/10"
+                title="Notifications"
+              >
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="hover:bg-accent/10"
+                onClick={() => window.open('http://www.mmecollege.org/', '_blank')}
+                title="College Profile"
+              >
                 <User className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout}>
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleLogout}
+                className="hover:bg-red-100 hover:text-red-600"
+                title="Logout"
+              >
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
