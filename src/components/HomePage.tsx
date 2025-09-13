@@ -162,7 +162,7 @@ export const HomePage = () => {
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">MMMES College Library</h1>
+                <h1 className="text-xl font-bold text-foreground">MMES College Library</h1>
                 <p className="text-sm text-muted-foreground">Welcome to your library</p>
               </div>
             </div>
@@ -380,11 +380,14 @@ export const HomePage = () => {
                 <CardTitle className="text-lg">Library Services</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3 cursor-pointer hover:bg-accent/10 p-2 rounded-lg transition-smooth"
+                  onClick={() => window.open('https://wa.me/918234567890?text=Hello,%20I%20need%20help%20with%20library%20services', '_blank')}
+                >
                   <Users className="h-4 w-4 text-primary" />
                   <div>
                     <p className="font-medium text-foreground">Ask a Librarian</p>
-                    <p className="text-sm text-muted-foreground">Chat now</p>
+                    <p className="text-sm text-muted-foreground">Chat on WhatsApp</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
