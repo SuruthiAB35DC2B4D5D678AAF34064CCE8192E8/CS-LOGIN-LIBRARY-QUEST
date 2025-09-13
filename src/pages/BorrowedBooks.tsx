@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, ArrowLeft, ExternalLink, RefreshCcw } from "lucide-react";
+import { BookOpen, Calendar, ArrowLeft, ExternalLink, RefreshCcw, LogOut } from "lucide-react";
+import libraryBackground from "@/assets/library-background.jpg";
 
 export const BorrowedBooks = () => {
   const [books] = useState([
@@ -37,23 +38,42 @@ export const BorrowedBooks = () => {
     alert(`Renewing "${title}" - This would process the renewal request.`);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    window.location.href = '/login';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div 
+      className="min-h-screen bg-gradient-background relative"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${libraryBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       {/* Header */}
       <header className="bg-card border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => window.close()}>
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Library
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => window.close()}>
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back to Library
+              </Button>
+              <div className="p-2 bg-gradient-primary rounded-lg shadow-glow">
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">My Borrowed Books</h1>
+                <p className="text-sm text-muted-foreground">Manage your current loans</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
             </Button>
-            <div className="p-2 bg-gradient-primary rounded-lg shadow-glow">
-              <BookOpen className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">My Borrowed Books</h1>
-              <p className="text-sm text-muted-foreground">Manage your current loans</p>
-            </div>
           </div>
         </div>
       </header>

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, Search, ArrowLeft, ExternalLink, Download } from "lucide-react";
+import { Database, Search, ArrowLeft, ExternalLink, Download, LogOut } from "lucide-react";
+import digitalLibraryBackground from "@/assets/digital-library-background.jpg";
 
 export const DigitalLibrary = () => {
   const [resources] = useState([
@@ -48,8 +49,22 @@ export const DigitalLibrary = () => {
     alert(`Downloading access guide for "${resourceTitle}"`);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    window.location.href = '/login';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div 
+      className="min-h-screen bg-gradient-background relative"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${digitalLibraryBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       {/* Header */}
       <header className="bg-card border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -67,13 +82,18 @@ export const DigitalLibrary = () => {
                 <p className="text-sm text-muted-foreground">Access online databases and e-resources</p>
               </div>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search databases..."
-                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
-              />
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search databases..."
+                  className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:border-primary focus:ring-primary/20 transition-smooth"
+                />
+              </div>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
+                <LogOut className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>

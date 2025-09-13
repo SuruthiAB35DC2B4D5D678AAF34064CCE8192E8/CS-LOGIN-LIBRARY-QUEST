@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
+import libraryBackground from "@/assets/library-background.jpg";
 
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -73,6 +74,14 @@ export const HomePage = () => {
     } else {
       window.open(`https://en.wikipedia.org/wiki/${searchQuery.replace(/\s+/g, '_')}`, '_blank');
     }
+  };
+
+  const handleLogout = () => {
+    // Clear any stored user data/tokens
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    // Redirect to login page
+    window.location.href = '/login';
   };
 
 
@@ -135,7 +144,15 @@ export const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div 
+      className="min-h-screen bg-gradient-background relative"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${libraryBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       {/* Header */}
       <header className="bg-card border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -166,7 +183,7 @@ export const HomePage = () => {
               <Button variant="ghost" size="icon">
                 <User className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
