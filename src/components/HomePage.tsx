@@ -397,6 +397,22 @@ export const HomePage = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
+            {/* Book Borrowing Button */}
+            <Card className="bg-gradient-card border-0 shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => window.location.href = '/book-borrow'}
+                  className="w-full bg-gradient-primary text-white hover:shadow-glow font-semibold h-12 text-base"
+                >
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Borrow a Book
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Quick Stats */}
             <Card className="bg-gradient-card border-0 shadow-soft">
               <CardHeader>
