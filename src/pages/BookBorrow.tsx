@@ -66,17 +66,31 @@ const BookBorrow = () => {
       endDate: endDate ? format(endDate, "PPP") : "",
     };
 
+    // Simulate sending book link via email
+    const bookLink = `https://library.mmecollege.org/books/${data.bookName.toLowerCase().replace(/\s+/g, '-')}`;
+    
     toast({
-      title: "Book Borrowing Request Submitted!",
-      description: `Your request for "${data.bookName}" has been submitted successfully. You'll receive a confirmation email at ${data.email}.`,
+      title: "Book Borrowing Request Approved!",
+      description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${data.email}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
     });
 
-    console.log("Book borrowing request:", submissionData);
+    // Simulate email sending
+    console.log("Sending email to:", data.email);
+    console.log("Book link:", bookLink);
+    console.log("Student details:", submissionData);
     
-    // Redirect back to home after 2 seconds
+    // Show confirmation with book link
+    setTimeout(() => {
+      toast({
+        title: "Email Sent Successfully!",
+        description: `Digital book access link sent to ${data.email}. Check your inbox for the download link.`,
+      });
+    }, 1500);
+    
+    // Redirect back to home after 4 seconds
     setTimeout(() => {
       navigate("/home");
-    }, 2000);
+    }, 4000);
   }
 
   return (
@@ -278,6 +292,39 @@ const BookBorrow = () => {
                     Submit Request
                   </Button>
                 </div>
+
+                {/* Summary Section */}
+                {form.watch("studentName") && endDate && (
+                  <Card className="bg-accent/5 border border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-primary">Borrowing Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Student Name</Label>
+                          <p className="text-lg font-semibold text-foreground">{form.watch("studentName")}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Return Date</Label>
+                          <p className="text-lg font-semibold text-primary">{format(endDate, "PPP")}</p>
+                        </div>
+                        {form.watch("bookName") && (
+                          <div className="md:col-span-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Book to Borrow</Label>
+                            <p className="text-lg font-semibold text-foreground">{form.watch("bookName")}</p>
+                          </div>
+                        )}
+                        {form.watch("email") && (
+                          <div className="md:col-span-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Digital Link will be sent to</Label>
+                            <p className="text-lg font-semibold text-primary">{form.watch("email")}</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </form>
             </Form>
           </CardContent>
