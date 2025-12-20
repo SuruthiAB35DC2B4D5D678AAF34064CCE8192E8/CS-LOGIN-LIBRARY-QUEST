@@ -51,6 +51,7 @@ export const LibraryChatbot = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const pendingQueryRef = useRef<string | null>(null);
   const { toast } = useToast();
 
   // Initialize speech recognition
@@ -64,8 +65,12 @@ export const LibraryChatbot = () => {
 
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setInput(transcript);
         setIsListening(false);
+        // Store the transcript and set input for display
+        if (transcript.trim()) {
+          setInput(transcript);
+          pendingQueryRef.current = transcript.trim();
+        }
       };
 
       recognitionRef.current.onerror = (event) => {
@@ -134,7 +139,16 @@ export const LibraryChatbot = () => {
     }
   };
 
-  const streamChat = useCallback(async (userMessage: string) => {
+  // Effect to process pending voice queries after speech recognition
+  useEffect(() => {
+    if (pendingQueryRef.current && !isLoading) {
+      const query = pendingQueryRef.current;
+      pendingQueryRef.current = null;
+      streamChatInternal(query);
+    }
+  });
+
+  const streamChatInternal = useCallback(async (userMessage: string) => {
     const userMsg: Message = { role: "user", content: userMessage };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
@@ -221,6 +235,10 @@ export const LibraryChatbot = () => {
       setIsLoading(false);
     }
   }, [messages, toast]);
+
+  const streamChat = useCallback((userMessage: string) => {
+    streamChatInternal(userMessage);
+  }, [streamChatInternal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
