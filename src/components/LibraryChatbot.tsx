@@ -139,15 +139,6 @@ export const LibraryChatbot = () => {
     }
   };
 
-  // Effect to process pending voice queries after speech recognition
-  useEffect(() => {
-    if (pendingQueryRef.current && !isLoading) {
-      const query = pendingQueryRef.current;
-      pendingQueryRef.current = null;
-      streamChatInternal(query);
-    }
-  });
-
   const streamChatInternal = useCallback(async (userMessage: string) => {
     const userMsg: Message = { role: "user", content: userMessage };
     setMessages(prev => [...prev, userMsg]);
@@ -235,6 +226,19 @@ export const LibraryChatbot = () => {
       setIsLoading(false);
     }
   }, [messages, toast]);
+
+  // Effect to process pending voice queries after speech recognition
+  useEffect(() => {
+    if (pendingQueryRef.current && !isLoading) {
+      const query = pendingQueryRef.current;
+      pendingQueryRef.current = null;
+      // Small delay to show the transcribed text before sending
+      const timer = setTimeout(() => {
+        streamChatInternal(query);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isListening, streamChatInternal]);
 
   const streamChat = useCallback((userMessage: string) => {
     streamChatInternal(userMessage);
