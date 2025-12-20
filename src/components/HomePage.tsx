@@ -25,6 +25,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
+import { LibraryChatbot } from "./LibraryChatbot";
 
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -519,6 +520,9 @@ export const HomePage = () => {
           </div>
         </div>
       </main>
+
+      {/* Library Chatbot */}
+      <LibraryChatbot />
     </div>
   );
 };
