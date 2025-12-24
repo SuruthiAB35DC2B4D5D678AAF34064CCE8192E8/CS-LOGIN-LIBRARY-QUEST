@@ -51,7 +51,7 @@ export const LibraryChatbot = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const pendingQueryRef = useRef<string | null>(null);
+  const streamChatRef = useRef<((msg: string) => void) | null>(null);
   const { toast } = useToast();
 
   // Initialize speech recognition
@@ -65,11 +65,16 @@ export const LibraryChatbot = () => {
 
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
+        console.log('Voice recognized:', transcript);
         setIsListening(false);
-        // Store the transcript and set input for display
+        
+        // Immediately process the voice query
         if (transcript.trim()) {
           setInput(transcript);
-          pendingQueryRef.current = transcript.trim();
+          // Use setTimeout to ensure state updates before sending
+          setTimeout(() => {
+            streamChatRef.current?.(transcript.trim());
+          }, 100);
         }
       };
 
@@ -227,18 +232,10 @@ export const LibraryChatbot = () => {
     }
   }, [messages, toast]);
 
-  // Effect to process pending voice queries after speech recognition
+  // Keep streamChatRef updated with latest function
   useEffect(() => {
-    if (pendingQueryRef.current && !isLoading) {
-      const query = pendingQueryRef.current;
-      pendingQueryRef.current = null;
-      // Small delay to show the transcribed text before sending
-      const timer = setTimeout(() => {
-        streamChatInternal(query);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, isListening, streamChatInternal]);
+    streamChatRef.current = streamChatInternal;
+  }, [streamChatInternal]);
 
   const streamChat = useCallback((userMessage: string) => {
     streamChatInternal(userMessage);
