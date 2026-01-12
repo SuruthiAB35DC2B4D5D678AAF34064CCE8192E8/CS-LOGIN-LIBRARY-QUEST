@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      borrowed_books: {
+        Row: {
+          book_name: string
+          class: string
+          created_at: string
+          department: string
+          email: string
+          end_date: string
+          id: string
+          is_returned: boolean
+          roll_number: string
+          start_date: string
+          student_name: string
+          updated_at: string
+        }
+        Insert: {
+          book_name: string
+          class: string
+          created_at?: string
+          department: string
+          email: string
+          end_date: string
+          id?: string
+          is_returned?: boolean
+          roll_number: string
+          start_date: string
+          student_name: string
+          updated_at?: string
+        }
+        Update: {
+          book_name?: string
+          class?: string
+          created_at?: string
+          department?: string
+          email?: string
+          end_date?: string
+          id?: string
+          is_returned?: boolean
+          roll_number?: string
+          start_date?: string
+          student_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

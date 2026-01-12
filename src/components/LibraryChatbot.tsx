@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,7 +40,13 @@ interface Message {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/library-chat`;
 
-export const LibraryChatbot = () => {
+// Props for the LibraryChatbot component
+export interface LibraryChatbotProps {
+  forceOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hello! 👋 I'm your MMES College Library assistant. Ask me about books, timings, borrowing rules, or any library services!" }
@@ -53,6 +59,19 @@ export const LibraryChatbot = () => {
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const streamChatRef = useRef<((msg: string) => void) | null>(null);
   const { toast } = useToast();
+
+  // Handle forceOpen prop - open chatbot when "Ask a Librarian" is clicked
+  useEffect(() => {
+    if (forceOpen) {
+      setIsOpen(true);
+    }
+  }, [forceOpen]);
+
+  // Handle close - notify parent when closed
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
 
   // Initialize speech recognition
   useEffect(() => {
@@ -281,7 +300,7 @@ export const LibraryChatbot = () => {
                 variant="ghost" 
                 size="icon" 
                 className="h-8 w-8 text-white hover:bg-white/20"
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
               >
                 <X className="h-4 w-4" />
               </Button>

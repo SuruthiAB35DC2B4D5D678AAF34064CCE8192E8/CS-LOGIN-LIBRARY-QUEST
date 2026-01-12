@@ -7,13 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ArrowLeft, BookOpen } from "lucide-react";
+import { CalendarIcon, ArrowLeft, BookOpen, AlertTriangle } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import libraryBackground from "@/assets/library-background.jpg";
 
 const FormSchema = z.object({
@@ -29,6 +31,9 @@ const FormSchema = z.object({
 const BookBorrow = () => {
   const navigate = useNavigate();
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [hasExistingBook, setHasExistingBook] = useState(false);
+  const [existingBookInfo, setExistingBookInfo] = useState<{ book_name: string; end_date: string } | null>(null);
+  const [isCheckingBorrow, setIsCheckingBorrow] = useState(false);
 
   useEffect(() => {
     document.title = "Book Borrowing - MMES College Library";
@@ -51,6 +56,7 @@ const BookBorrow = () => {
   });
 
   const watchStartDate = form.watch("startDate");
+  const watchRollNumber = form.watch("rollNumber");
 
   useEffect(() => {
     if (watchStartDate) {
@@ -59,38 +65,119 @@ const BookBorrow = () => {
     }
   }, [watchStartDate]);
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    const submissionData = {
-      ...data,
-      startDate: format(data.startDate, "PPP"),
-      endDate: endDate ? format(endDate, "PPP") : "",
+  // Check if student already has a borrowed book
+  useEffect(() => {
+    const checkExistingBorrow = async () => {
+      if (watchRollNumber && watchRollNumber.trim().length >= 3) {
+        setIsCheckingBorrow(true);
+        try {
+          const { data, error } = await supabase
+            .from('borrowed_books')
+            .select('book_name, end_date')
+            .eq('roll_number', watchRollNumber.trim())
+            .eq('is_returned', false)
+            .maybeSingle();
+
+          if (error) {
+            console.error('Error checking borrow status:', error);
+            setHasExistingBook(false);
+            setExistingBookInfo(null);
+          } else if (data) {
+            setHasExistingBook(true);
+            setExistingBookInfo({ book_name: data.book_name, end_date: data.end_date });
+          } else {
+            setHasExistingBook(false);
+            setExistingBookInfo(null);
+          }
+        } catch (err) {
+          console.error('Error:', err);
+          setHasExistingBook(false);
+          setExistingBookInfo(null);
+        }
+        setIsCheckingBorrow(false);
+      } else {
+        setHasExistingBook(false);
+        setExistingBookInfo(null);
+      }
     };
 
-    // Simulate sending book link via email
-    const bookLink = `https://library.mmecollege.org/books/${data.bookName.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    toast({
-      title: "Book Borrowing Request Approved!",
-      description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${data.email}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
-    });
+    const debounceTimer = setTimeout(checkExistingBorrow, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [watchRollNumber]);
 
-    // Simulate email sending
-    console.log("Sending email to:", data.email);
-    console.log("Book link:", bookLink);
-    console.log("Student details:", submissionData);
-    
-    // Show confirmation with book link
-    setTimeout(() => {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    // Double-check if student already has a borrowed book
+    if (hasExistingBook) {
       toast({
-        title: "Email Sent Successfully!",
-        description: `Digital book access link sent to ${data.email}. Check your inbox for the download link.`,
+        title: "Cannot Borrow Book",
+        description: `You already have "${existingBookInfo?.book_name}" borrowed. Please return it first before borrowing another book.`,
+        variant: "destructive",
       });
-    }, 1500);
-    
-    // Redirect back to home after 4 seconds
-    setTimeout(() => {
-      navigate("/home");
-    }, 4000);
+      return;
+    }
+
+    const submissionData = {
+      roll_number: data.rollNumber.trim(),
+      student_name: data.studentName.trim(),
+      email: data.email.trim(),
+      department: data.department.trim(),
+      class: data.class.trim(),
+      book_name: data.bookName.trim(),
+      start_date: format(data.startDate, "yyyy-MM-dd"),
+      end_date: endDate ? format(endDate, "yyyy-MM-dd") : format(addDays(data.startDate, 7), "yyyy-MM-dd"),
+    };
+
+    try {
+      const { error } = await supabase
+        .from('borrowed_books')
+        .insert(submissionData);
+
+      if (error) {
+        // Check if it's a unique constraint violation (student already has a book)
+        if (error.code === '23505') {
+          toast({
+            title: "Cannot Borrow Book",
+            description: "You already have a book borrowed. Please return it first before borrowing another book.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
+
+      // Simulate sending book link via email
+      const bookLink = `https://library.mmecollege.org/books/${data.bookName.toLowerCase().replace(/\s+/g, '-')}`;
+      
+      toast({
+        title: "Book Borrowing Request Approved!",
+        description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${data.email}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
+      });
+
+      // Simulate email sending
+      console.log("Sending email to:", data.email);
+      console.log("Book link:", bookLink);
+      console.log("Student details:", submissionData);
+      
+      // Show confirmation with book link
+      setTimeout(() => {
+        toast({
+          title: "Email Sent Successfully!",
+          description: `Digital book access link sent to ${data.email}. Check your inbox for the download link.`,
+        });
+      }, 1500);
+      
+      // Redirect back to home after 4 seconds
+      setTimeout(() => {
+        navigate("/home");
+      }, 4000);
+    } catch (error) {
+      console.error('Error borrowing book:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit borrowing request. Please try again.",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -139,6 +226,18 @@ const BookBorrow = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Warning if student already has a borrowed book */}
+            {hasExistingBook && existingBookInfo && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>You Already Have a Borrowed Book</AlertTitle>
+                <AlertDescription>
+                  You currently have "{existingBookInfo.book_name}" borrowed until {format(new Date(existingBookInfo.end_date), "PPP")}. 
+                  Please return it first before borrowing another book. Each student can only borrow one book at a time.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -288,8 +387,12 @@ const BookBorrow = () => {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-gradient-primary text-white hover:shadow-glow">
-                    Submit Request
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-primary text-white hover:shadow-glow"
+                    disabled={hasExistingBook || isCheckingBorrow}
+                  >
+                    {isCheckingBorrow ? "Checking..." : "Submit Request"}
                   </Button>
                 </div>
 
