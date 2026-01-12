@@ -22,15 +22,18 @@ import {
   CheckCircle2,
   AlertCircle,
   Newspaper,
-  ChevronDown
+  ChevronDown,
+  MessageCircle,
+  HelpCircle
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
-import { LibraryChatbot } from "./LibraryChatbot";
+import { LibraryChatbot, type LibraryChatbotProps } from "./LibraryChatbot";
 
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [showAskLibrarian, setShowAskLibrarian] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -489,40 +492,49 @@ export const HomePage = () => {
               </CardContent>
             </Card>
 
-            {/* Study Groups */}
+            {/* Library Services */}
             <Card className="bg-gradient-card border-0 shadow-soft">
               <CardHeader>
                 <CardTitle className="text-lg">Library Services</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div 
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-accent/10 p-2 rounded-lg transition-smooth"
-                  onClick={() => window.open('https://wa.me/918234567890?text=Hello,%20I%20need%20help%20with%20library%20services', '_blank')}
+                <Button 
+                  onClick={() => setShowAskLibrarian(true)}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-glow font-semibold h-12 text-base"
                 >
-                  <Users className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="font-medium text-foreground">Ask a Librarian</p>
-                    <p className="text-sm text-muted-foreground">Chat on WhatsApp</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Users className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="font-medium text-foreground">Citation Help Desk</p>
-                    <p className="text-sm text-muted-foreground">View times</p>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full mt-4">
-                  View All Services
+                  <HelpCircle className="h-5 w-5 mr-2" />
+                  Ask a Librarian
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Get instant help from our AI librarian assistant
+                </p>
+                <div className="border-t border-border pt-3 mt-3">
+                  <div 
+                    className="flex items-center space-x-3 cursor-pointer hover:bg-accent/10 p-2 rounded-lg transition-smooth"
+                    onClick={() => window.open('https://wa.me/918234567890?text=Hello,%20I%20need%20help%20with%20library%20services', '_blank')}
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-500" />
+                    <div>
+                      <p className="font-medium text-foreground">WhatsApp Support</p>
+                      <p className="text-sm text-muted-foreground">Chat with library staff</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="font-medium text-foreground">Citation Help Desk</p>
+                      <p className="text-sm text-muted-foreground">Mon-Fri: 10 AM - 4 PM</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
 
-      {/* Library Chatbot */}
-      <LibraryChatbot />
+      {/* Library Chatbot - with Ask a Librarian trigger */}
+      <LibraryChatbot forceOpen={showAskLibrarian} onClose={() => setShowAskLibrarian(false)} />
     </div>
   );
 };
