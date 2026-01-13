@@ -24,7 +24,8 @@ import {
   Newspaper,
   ChevronDown,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  BookCheck
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
 import { LibraryChatbot, type LibraryChatbotProps } from "./LibraryChatbot";
@@ -406,13 +407,21 @@ export const HomePage = () => {
               <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
                 <Button 
                   onClick={() => window.location.href = '/book-borrow'}
                   className="w-full bg-gradient-primary text-white hover:shadow-glow font-semibold h-12 text-base"
                 >
                   <BookOpen className="h-5 w-5 mr-2" />
                   Borrow a Book
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = '/return-book'}
+                  variant="outline"
+                  className="w-full font-semibold h-12 text-base border-primary text-primary hover:bg-primary/10"
+                >
+                  <BookCheck className="h-5 w-5 mr-2" />
+                  Return a Book
                 </Button>
               </CardContent>
             </Card>
