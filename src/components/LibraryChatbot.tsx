@@ -73,9 +73,49 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
     onClose?.();
   };
 
-  // Initialize speech recognition
+  // Cleanup speech recognition on unmount
   useEffect(() => {
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const toggleListening = async () => {
+    // Check for browser support
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+      toast({
+        title: "Not Supported",
+        description: "Voice input is not supported in your browser. Try Chrome or Safari.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Request microphone permission explicitly for mobile devices
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop()); // Release immediately after permission check
+    } catch (error) {
+      console.error('Microphone permission error:', error);
+      toast({
+        title: "Microphone Access Required",
+        description: "Please allow microphone access to use voice input.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Initialize recognition if not already done
+    if (!recognitionRef.current) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
@@ -87,10 +127,8 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
         console.log('Voice recognized:', transcript);
         setIsListening(false);
         
-        // Immediately process the voice query
         if (transcript.trim()) {
           setInput(transcript);
-          // Use setTimeout to ensure state updates before sending
           setTimeout(() => {
             streamChatRef.current?.(transcript.trim());
           }, 100);
@@ -100,9 +138,17 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        
+        let message = "Could not recognize speech. Please try again.";
+        if (event.error === 'not-allowed') {
+          message = "Microphone access denied. Please enable it in your browser settings.";
+        } else if (event.error === 'no-speech') {
+          message = "No speech detected. Please try speaking again.";
+        }
+        
         toast({
           title: "Voice Error",
-          description: "Could not recognize speech. Please try again.",
+          description: message,
           variant: "destructive",
         });
       };
@@ -112,36 +158,21 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
       };
     }
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, [toast]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const toggleListening = () => {
-    if (!recognitionRef.current) {
-      toast({
-        title: "Not Supported",
-        description: "Voice input is not supported in your browser.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
-      recognitionRef.current.start();
-      setIsListening(true);
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        toast({
+          title: "🎤 Listening",
+          description: "Speak now... I'm ready to hear your question.",
+        });
+      } catch (error) {
+        console.error('Failed to start recognition:', error);
+        setIsListening(false);
+      }
     }
   };
 
