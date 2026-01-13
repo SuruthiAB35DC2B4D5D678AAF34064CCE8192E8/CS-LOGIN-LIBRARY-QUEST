@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import BookBorrow from "./pages/BookBorrow";
 import ReturnBook from "./pages/ReturnBook";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/book-borrow" element={<ProtectedRoute><BookBorrow /></ProtectedRoute>} />
           <Route path="/return-book" element={<ProtectedRoute><ReturnBook /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

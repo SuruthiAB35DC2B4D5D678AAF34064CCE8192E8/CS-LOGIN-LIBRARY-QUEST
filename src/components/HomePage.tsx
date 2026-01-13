@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const HomePage = () => {
+  const navigate = useNavigate();
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -289,8 +291,8 @@ export const HomePage = () => {
                 variant="ghost" 
                 size="icon"
                 className="hover:bg-accent/10"
-                onClick={() => window.open('http://www.mmecollege.org/', '_blank')}
-                title="College Profile"
+                onClick={() => navigate('/profile')}
+                title="My Profile"
               >
                 <User className="h-5 w-5" />
               </Button>
