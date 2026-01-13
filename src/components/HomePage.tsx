@@ -29,12 +29,15 @@ import {
 } from "lucide-react";
 import libraryBackground from "@/assets/library-background.jpg";
 import { LibraryChatbot, type LibraryChatbotProps } from "./LibraryChatbot";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export const HomePage = () => {
   const [currentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showAskLibrarian, setShowAskLibrarian] = useState(false);
+  const { toast } = useToast();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,12 +87,24 @@ export const HomePage = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Clear any stored user data/tokens
-    localStorage.removeItem('user');
-    sessionStorage.clear();
-    // Redirect to login page
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('user');
+      sessionStorage.clear();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
 
