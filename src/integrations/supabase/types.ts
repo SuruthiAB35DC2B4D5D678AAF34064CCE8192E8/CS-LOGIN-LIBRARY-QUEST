@@ -59,6 +59,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean
+          is_read: boolean
+          message: string
+          sender_email: string | null
+          sender_name: string
+          sender_roll_number: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          is_read?: boolean
+          message: string
+          sender_email?: string | null
+          sender_name: string
+          sender_roll_number: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          is_read?: boolean
+          message?: string
+          sender_email?: string | null
+          sender_name?: string
+          sender_roll_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
