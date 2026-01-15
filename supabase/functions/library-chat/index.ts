@@ -50,6 +50,13 @@ const LIBRARY_SYSTEM_PROMPT = `You are a friendly and helpful library assistant 
 - Structural Analysis by R.C. Hibbeler
 - Power Systems by C.L. Wadhwa
 
+**Image Recognition:**
+When a user sends an image of a book cover, analyze it to identify:
+1. The book title
+2. The author name
+3. The subject/department it belongs to
+4. Whether it's likely available in our library based on the departments we cover
+
 Answer questions about library timing, book availability, borrowing rules, services, and general library queries. Be concise, friendly, and helpful. If you don't know something specific, guide them to contact the library staff.`;
 
 serve(async (req) => {

@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Mic, MicOff, Volume2, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Mic, MicOff, Volume2, Loader2, Camera, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
 // Type declarations for Web Speech API
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -36,6 +37,7 @@ declare global {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  image?: string; // Base64 image for display
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/library-chat`;
@@ -49,15 +51,23 @@ export interface LibraryChatbotProps {
 export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hello! 👋 I'm your MMES College Library assistant. Ask me about books, timings, borrowing rules, or any library services!" }
+    { role: "assistant", content: "Hello! 👋 I'm your MMES College Library assistant. Ask me about books, timings, borrowing rules, or any library services! You can also use the camera 📷 to scan book covers for information." }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const streamChatRef = useRef<((msg: string) => void) | null>(null);
+  const streamChatRef = useRef<((msg: string, image?: string) => void) | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Handle forceOpen prop - open chatbot when "Ask a Librarian" is clicked
@@ -70,15 +80,17 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
   // Handle close - notify parent when closed
   const handleClose = () => {
     setIsOpen(false);
+    stopCamera();
     onClose?.();
   };
 
-  // Cleanup speech recognition on unmount
+  // Cleanup speech recognition and camera on unmount
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
+      stopCamera();
     };
   }, []);
 
@@ -88,6 +100,132 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Start camera
+  const startCamera = async () => {
+    try {
+      // Request camera permission
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment', // Prefer back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      
+      streamRef.current = stream;
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      
+      setIsCameraActive(true);
+      setCapturedImage(null);
+      
+      toast({
+        title: "📷 Camera Ready",
+        description: "Point at a book cover and tap capture.",
+      });
+    } catch (error) {
+      console.error('Camera access error:', error);
+      toast({
+        title: "Camera Access Required",
+        description: "Please allow camera access to scan book covers.",
+        variant: "destructive",
+      });
+      setShowCameraModal(false);
+    }
+  };
+
+  // Stop camera
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  // Open camera modal
+  const openCamera = () => {
+    setShowCameraModal(true);
+    setCapturedImage(null);
+    setTimeout(() => startCamera(), 100);
+  };
+
+  // Close camera modal
+  const closeCameraModal = () => {
+    stopCamera();
+    setShowCameraModal(false);
+    setCapturedImage(null);
+  };
+
+  // Capture image from video
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        setCapturedImage(imageData);
+        stopCamera();
+        
+        toast({
+          title: "✅ Image Captured",
+          description: "Send to search for this book, or retake.",
+        });
+      }
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageData = event.target?.result as string;
+        setCapturedImage(imageData);
+        setShowCameraModal(true);
+        stopCamera();
+      };
+      reader.readAsDataURL(file);
+    }
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Send captured image
+  const sendCapturedImage = () => {
+    if (capturedImage) {
+      streamChatRef.current?.("What book is this? Please help me find information about it in the library.", capturedImage);
+      closeCameraModal();
+    }
+  };
+
+  // Retake photo
+  const retakePhoto = () => {
+    setCapturedImage(null);
+    startCamera();
+  };
 
   const toggleListening = async () => {
     // Check for browser support
@@ -194,8 +332,12 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
     }
   };
 
-  const streamChatInternal = useCallback(async (userMessage: string) => {
-    const userMsg: Message = { role: "user", content: userMessage };
+  const streamChatInternal = useCallback(async (userMessage: string, imageBase64?: string) => {
+    const userMsg: Message = { 
+      role: "user", 
+      content: userMessage,
+      image: imageBase64 
+    };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
     setInput("");
@@ -215,13 +357,33 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
         return;
       }
 
+      // Prepare message content - with or without image
+      const messageContent = imageBase64 
+        ? [
+            { type: "text", text: userMessage },
+            { type: "image_url", image_url: { url: imageBase64 } }
+          ]
+        : userMessage;
+
+      const messagesToSend = messages.map(m => ({
+        role: m.role,
+        content: m.image 
+          ? [
+              { type: "text", text: m.content },
+              { type: "image_url", image_url: { url: m.image } }
+            ]
+          : m.content
+      }));
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMsg] }),
+        body: JSON.stringify({ 
+          messages: [...messagesToSend, { role: "user", content: messageContent }] 
+        }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -301,8 +463,8 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
     streamChatRef.current = streamChatInternal;
   }, [streamChatInternal]);
 
-  const streamChat = useCallback((userMessage: string) => {
-    streamChatInternal(userMessage);
+  const streamChat = useCallback((userMessage: string, image?: string) => {
+    streamChatInternal(userMessage, image);
   }, [streamChatInternal]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -321,6 +483,16 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
 
   return (
     <>
+      {/* Hidden file input for image upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       {/* Chat Button */}
       <Button
         onClick={() => setIsOpen(true)}
@@ -368,6 +540,13 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
                           : "bg-muted text-foreground rounded-bl-sm"
                       }`}
                     >
+                      {msg.image && (
+                        <img 
+                          src={msg.image} 
+                          alt="Uploaded" 
+                          className="rounded-lg mb-2 max-w-full h-auto max-h-32 object-cover"
+                        />
+                      )}
                       <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                     </div>
                   </div>
@@ -406,6 +585,7 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
             {/* Input */}
             <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-background">
               <div className="flex gap-2">
+                {/* Microphone Button */}
                 <Button
                   type="button"
                   variant={isListening ? "destructive" : "outline"}
@@ -413,9 +593,37 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
                   className="shrink-0"
                   onClick={toggleListening}
                   disabled={isLoading}
+                  title="Voice input"
                 >
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
+                
+                {/* Camera Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={openCamera}
+                  disabled={isLoading}
+                  title="Scan book cover"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+
+                {/* Gallery Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                  title="Upload image"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+
                 <input
                   type="text"
                   value={input}
@@ -446,6 +654,103 @@ export const LibraryChatbot = ({ forceOpen = false, onClose }: LibraryChatbotPro
           </CardContent>
         </Card>
       </div>
+
+      {/* Camera Modal */}
+      {showCameraModal && (
+        <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="bg-gradient-primary text-white rounded-t-lg py-3 px-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Scan Book Cover
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-white hover:bg-white/20"
+                onClick={closeCameraModal}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="p-4">
+              {/* Video preview or captured image */}
+              <div className="relative aspect-[4/3] bg-muted rounded-lg overflow-hidden mb-4">
+                {capturedImage ? (
+                  <img 
+                    src={capturedImage} 
+                    alt="Captured" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <>
+                    <video 
+                      ref={videoRef}
+                      autoPlay 
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                    {!isCameraActive && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Hidden canvas for capture */}
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                {capturedImage ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={retakePhoto}
+                    >
+                      Retake
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-gradient-primary"
+                      onClick={sendCapturedImage}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Search Book
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Gallery
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-gradient-primary"
+                      onClick={captureImage}
+                      disabled={!isCameraActive}
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Capture
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                📷 Point your camera at a book cover to search for it in the library
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </>
   );
 };
