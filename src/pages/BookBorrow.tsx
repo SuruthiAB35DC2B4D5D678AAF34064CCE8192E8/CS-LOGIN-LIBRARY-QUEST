@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ArrowLeft, BookOpen, AlertTriangle } from "lucide-react";
+import { CalendarIcon, ArrowLeft, BookOpen, AlertTriangle, Loader2 } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
@@ -17,6 +17,8 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import libraryBackground from "@/assets/library-background.jpg";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 const FormSchema = z.object({
   studentName: z.string().min(2, { message: "Student name must be at least 2 characters." }),
@@ -24,12 +26,14 @@ const FormSchema = z.object({
   department: z.string().min(1, { message: "Department is required." }),
   bookName: z.string().min(1, { message: "Book name is required." }),
   rollNumber: z.string().min(1, { message: "Roll number is required." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
   startDate: z.date({ required_error: "Start date is required." }),
 });
 
 const BookBorrow = () => {
   const navigate = useNavigate();
+  const { session, userEmail, isLoading: isRoleLoading } = useUserRole();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(session?.user?.id);
+  
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [hasExistingBook, setHasExistingBook] = useState(false);
   const [existingBookInfo, setExistingBookInfo] = useState<{ book_name: string; end_date: string } | null>(null);
@@ -51,9 +55,18 @@ const BookBorrow = () => {
       department: "",
       bookName: "",
       rollNumber: "",
-      email: "",
     },
   });
+
+  // Pre-fill form from profile when available
+  useEffect(() => {
+    if (profile) {
+      if (profile.student_name) form.setValue("studentName", profile.student_name);
+      if (profile.class) form.setValue("class", profile.class);
+      if (profile.department) form.setValue("department", profile.department);
+      if (profile.roll_number) form.setValue("rollNumber", profile.roll_number);
+    }
+  }, [profile, form]);
 
   const watchStartDate = form.watch("startDate");
   const watchRollNumber = form.watch("rollNumber");
@@ -106,6 +119,16 @@ const BookBorrow = () => {
   }, [watchRollNumber]);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
+    // Ensure user is logged in
+    if (!userEmail) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to borrow books.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Double-check if student already has a borrowed book
     if (hasExistingBook) {
       toast({
@@ -119,7 +142,7 @@ const BookBorrow = () => {
     const submissionData = {
       roll_number: data.rollNumber.trim(),
       student_name: data.studentName.trim(),
-      email: data.email.trim(),
+      email: userEmail, // Use authenticated user's email
       department: data.department.trim(),
       class: data.class.trim(),
       book_name: data.bookName.trim(),
@@ -150,11 +173,11 @@ const BookBorrow = () => {
       
       toast({
         title: "Book Borrowing Request Approved!",
-        description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${data.email}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
+        description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${userEmail}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
       });
 
       // Simulate email sending
-      console.log("Sending email to:", data.email);
+      console.log("Sending email to:", userEmail);
       console.log("Book link:", bookLink);
       console.log("Student details:", submissionData);
       
@@ -162,7 +185,7 @@ const BookBorrow = () => {
       setTimeout(() => {
         toast({
           title: "Email Sent Successfully!",
-          description: `Digital book access link sent to ${data.email}. Check your inbox for the download link.`,
+          description: `Digital book access link sent to ${userEmail}. Check your inbox for the download link.`,
         });
       }, 1500);
       
@@ -298,19 +321,19 @@ const BookBorrow = () => {
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email ID *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your email address" type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Email Display (Read-only from session) */}
+                <div className="space-y-2">
+                  <Label>Email ID (From your account)</Label>
+                  <Input 
+                    value={userEmail || ''} 
+                    disabled 
+                    className="bg-muted"
+                    placeholder="Loading..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Book access link will be sent to this email
+                  </p>
+                </div>
 
                 <FormField
                   control={form.control}
@@ -418,10 +441,10 @@ const BookBorrow = () => {
                             <p className="text-lg font-semibold text-foreground">{form.watch("bookName")}</p>
                           </div>
                         )}
-                        {form.watch("email") && (
+                        {userEmail && (
                           <div className="md:col-span-2">
                             <Label className="text-sm font-medium text-muted-foreground">Digital Link will be sent to</Label>
-                            <p className="text-lg font-semibold text-primary">{form.watch("email")}</p>
+                            <p className="text-lg font-semibold text-primary">{userEmail}</p>
                           </div>
                         )}
                       </div>

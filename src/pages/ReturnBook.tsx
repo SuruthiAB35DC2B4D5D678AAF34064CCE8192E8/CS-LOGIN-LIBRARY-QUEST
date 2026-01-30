@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Search, BookCheck, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, BookCheck, Loader2, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import digitalLibraryBackground from "@/assets/digital-library-background.jpg";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface BorrowedBook {
   id: string;
@@ -19,63 +18,70 @@ interface BorrowedBook {
   student_name: string;
   department: string;
   class: string;
+  roll_number: string;
+  email: string;
 }
 
 const ReturnBook = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [rollNumber, setRollNumber] = useState("");
+  const { userEmail, isAdmin, isStaff, isLoading: isRoleLoading } = useUserRole();
+  
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isReturning, setIsReturning] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Fetch borrowed books for current user or all if admin
+  const fetchBorrowedBooks = async () => {
+    if (!userEmail && !isAdmin && !isStaff) return;
     
-    if (!rollNumber.trim()) {
-      toast({
-        title: "Roll Number Required",
-        description: "Please enter your roll number to search.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSearching(true);
-    setHasSearched(true);
-
+    setIsLoading(true);
+    
     try {
-      const { data, error } = await supabase
+      // Build query - admins/staff see all, regular users see their own
+      let query = supabase
         .from("borrowed_books")
-        .select("id, book_name, start_date, end_date, student_name, department, class")
-        .eq("roll_number", rollNumber.trim().toUpperCase())
-        .eq("is_returned", false);
+        .select("id, book_name, start_date, end_date, student_name, department, class, roll_number, email")
+        .eq("is_returned", false)
+        .order("end_date", { ascending: true });
+
+      const { data, error } = await query;
 
       if (error) {
         throw error;
       }
 
       setBorrowedBooks(data || []);
-
-      if (data && data.length === 0) {
-        toast({
-          title: "No Books Found",
-          description: "No borrowed books found for this roll number.",
-        });
-      }
     } catch (error) {
+      console.error("Error fetching books:", error);
       toast({
-        title: "Search Failed",
-        description: "Failed to fetch borrowed books. Please try again.",
+        title: "Failed to Load Books",
+        description: "Unable to fetch borrowed books. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsSearching(false);
+      setIsLoading(false);
     }
   };
 
+  // Fetch books when user role is loaded
+  useEffect(() => {
+    if (!isRoleLoading && userEmail) {
+      fetchBorrowedBooks();
+    }
+  }, [isRoleLoading, userEmail, isAdmin, isStaff]);
+
   const handleReturn = async (bookId: string, bookName: string) => {
+    // Only admins/staff can return books
+    if (!isAdmin && !isStaff) {
+      toast({
+        title: "Permission Denied",
+        description: "Only library staff can mark books as returned. Please visit the library.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsReturning(bookId);
 
     try {
@@ -118,6 +124,18 @@ const ReturnBook = () => {
     return new Date(endDate) < new Date();
   };
 
+  // Show loading state
+  if (isRoleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="min-h-screen bg-gradient-background"
@@ -139,115 +157,117 @@ const ReturnBook = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-white">Return Book</h1>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white">
+              {isAdmin || isStaff ? "Return Books (Admin)" : "My Borrowed Books"}
+            </h1>
             <p className="text-white/70">
-              Enter your roll number to view and return borrowed books
+              {isAdmin || isStaff 
+                ? "View and process book returns for all students"
+                : "View your currently borrowed books"
+              }
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchBorrowedBooks}
+            disabled={isLoading}
+            className="bg-background/80 backdrop-blur-sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
-        {/* Search Card */}
-        <Card className="max-w-2xl mx-auto mb-8 bg-background/95 backdrop-blur-sm">
+        {/* Info Card */}
+        <Card className="max-w-4xl mx-auto mb-8 bg-background/95 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookCheck className="h-5 w-5 text-primary" />
-              Find Your Borrowed Books
+              {isAdmin || isStaff ? "All Borrowed Books" : "Your Borrowed Books"}
             </CardTitle>
             <CardDescription>
-              Enter your roll number to see all books currently borrowed
+              {isAdmin || isStaff 
+                ? `Showing all currently borrowed books. Found ${borrowedBooks.length} book(s).`
+                : `Books borrowed with ${userEmail}. Found ${borrowedBooks.length} book(s).`
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSearch} className="flex gap-4">
-              <div className="flex-1">
-                <Label htmlFor="rollNumber" className="sr-only">
-                  Roll Number
-                </Label>
-                <Input
-                  id="rollNumber"
-                  type="text"
-                  placeholder="Enter Roll Number (e.g., M251712)"
-                  value={rollNumber}
-                  onChange={(e) => setRollNumber(e.target.value.toUpperCase())}
-                  className="h-12"
-                />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
-              <Button type="submit" className="h-12 px-6" disabled={isSearching}>
-                {isSearching ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
-                  </>
+            ) : borrowedBooks.length === 0 ? (
+              <div className="text-center py-8">
+                <CheckCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {isAdmin || isStaff 
+                    ? "No books are currently borrowed by any student."
+                    : "You don't have any borrowed books."
+                  }
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {isAdmin || isStaff 
+                    ? "All books have been returned."
+                    : "Visit the Book Borrowing page to borrow a book."
+                  }
+                </p>
+              </div>
+            ) : (
+              <>
+                {borrowedBooks.some((book) => isOverdue(book.end_date)) && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Some books are overdue! {isAdmin || isStaff 
+                        ? "Contact students to return immediately."
+                        : "Please return them immediately to avoid late fees."
+                      }
+                    </AlertDescription>
+                  </Alert>
                 )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Results */}
-        {hasSearched && (
-          <Card className="max-w-4xl mx-auto bg-background/95 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Borrowed Books</CardTitle>
-              <CardDescription>
-                {borrowedBooks.length > 0
-                  ? `Found ${borrowedBooks.length} book(s) currently borrowed`
-                  : "No books currently borrowed"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {borrowedBooks.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    No borrowed books found for roll number{" "}
-                    <span className="font-semibold">{rollNumber}</span>
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    All books have been returned or the roll number doesn't have any records.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {borrowedBooks.some((book) => isOverdue(book.end_date)) && (
-                    <Alert variant="destructive" className="mb-4">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        Some books are overdue! Please return them immediately to avoid late fees.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Book Name</TableHead>
-                        <TableHead>Borrowed Date</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Status</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Book Name</TableHead>
+                      {(isAdmin || isStaff) && <TableHead>Student</TableHead>}
+                      <TableHead>Borrowed Date</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      {(isAdmin || isStaff) && (
                         <TableHead className="text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {borrowedBooks.map((book) => (
-                        <TableRow key={book.id}>
-                          <TableCell className="font-medium">
-                            {book.book_name}
-                          </TableCell>
-                          <TableCell>{formatDate(book.start_date)}</TableCell>
-                          <TableCell>{formatDate(book.end_date)}</TableCell>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {borrowedBooks.map((book) => (
+                      <TableRow key={book.id}>
+                        <TableCell className="font-medium">
+                          {book.book_name}
+                        </TableCell>
+                        {(isAdmin || isStaff) && (
                           <TableCell>
-                            {isOverdue(book.end_date) ? (
-                              <span className="inline-flex items-center gap-1 text-destructive font-medium">
-                                <AlertCircle className="h-3 w-3" />
-                                Overdue
-                              </span>
-                            ) : (
-                              <span className="text-green-600 font-medium">Active</span>
-                            )}
+                            <div className="text-sm">
+                              <p className="font-medium">{book.student_name}</p>
+                              <p className="text-muted-foreground">{book.roll_number}</p>
+                            </div>
                           </TableCell>
+                        )}
+                        <TableCell>{formatDate(book.start_date)}</TableCell>
+                        <TableCell>{formatDate(book.end_date)}</TableCell>
+                        <TableCell>
+                          {isOverdue(book.end_date) ? (
+                            <span className="inline-flex items-center gap-1 text-destructive font-medium">
+                              <AlertCircle className="h-3 w-3" />
+                              Overdue
+                            </span>
+                          ) : (
+                            <span className="text-primary font-medium">Active</span>
+                          )}
+                        </TableCell>
+                        {(isAdmin || isStaff) && (
                           <TableCell className="text-right">
                             <Button
                               size="sm"
@@ -264,29 +284,26 @@ const ReturnBook = () => {
                               )}
                             </Button>
                           </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
 
-                  {/* Student Info */}
-                  {borrowedBooks[0] && (
-                    <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-medium">Student:</span>{" "}
-                        {borrowedBooks[0].student_name} |{" "}
-                        <span className="font-medium">Department:</span>{" "}
-                        {borrowedBooks[0].department} |{" "}
-                        <span className="font-medium">Class:</span>{" "}
-                        {borrowedBooks[0].class}
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                {/* Note for regular users */}
+                {!isAdmin && !isStaff && (
+                  <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium">Note:</span> To return a book, 
+                      please visit the library and hand it over to the librarian who will 
+                      process the return.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
