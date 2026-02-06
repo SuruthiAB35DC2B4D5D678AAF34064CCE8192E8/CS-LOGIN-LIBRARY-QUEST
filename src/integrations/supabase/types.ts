@@ -28,6 +28,7 @@ export type Database = {
           start_date: string
           student_name: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           book_name: string
@@ -42,6 +43,7 @@ export type Database = {
           start_date: string
           student_name: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           book_name?: string
@@ -56,6 +58,7 @@ export type Database = {
           start_date?: string
           student_name?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -69,6 +72,7 @@ export type Database = {
           sender_email: string | null
           sender_name: string
           sender_roll_number: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -79,6 +83,7 @@ export type Database = {
           sender_email?: string | null
           sender_name: string
           sender_roll_number: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -89,6 +94,7 @@ export type Database = {
           sender_email?: string | null
           sender_name?: string
           sender_roll_number?: string
+          user_id?: string | null
         }
         Relationships: []
       }
