@@ -31,7 +31,7 @@ const FormSchema = z.object({
 
 const BookBorrow = () => {
   const navigate = useNavigate();
-  const { session, userEmail, isLoading: isRoleLoading } = useUserRole();
+  const { session, userEmail, userId, isLoading: isRoleLoading } = useUserRole();
   const { profile, isLoading: isProfileLoading } = useUserProfile(session?.user?.id);
   
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -120,7 +120,7 @@ const BookBorrow = () => {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     // Ensure user is logged in
-    if (!userEmail) {
+    if (!userEmail || !userId) {
       toast({
         title: "Login Required",
         description: "Please log in to borrow books.",
@@ -140,6 +140,7 @@ const BookBorrow = () => {
     }
 
     const submissionData = {
+      user_id: userId, // Use authenticated user's ID for RLS
       roll_number: data.rollNumber.trim(),
       student_name: data.studentName.trim(),
       email: userEmail, // Use authenticated user's email

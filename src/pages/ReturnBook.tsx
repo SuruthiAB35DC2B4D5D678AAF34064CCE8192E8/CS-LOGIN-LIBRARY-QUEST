@@ -25,7 +25,7 @@ interface BorrowedBook {
 const ReturnBook = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userEmail, isAdmin, isStaff, isLoading: isRoleLoading } = useUserRole();
+  const { userEmail, userId, isAdmin, isStaff, isLoading: isRoleLoading } = useUserRole();
   
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ const ReturnBook = () => {
 
   // Fetch borrowed books for current user or all if admin
   const fetchBorrowedBooks = async () => {
-    if (!userEmail && !isAdmin && !isStaff) return;
+    if (!userId && !isAdmin && !isStaff) return;
     
     setIsLoading(true);
     
@@ -66,10 +66,10 @@ const ReturnBook = () => {
 
   // Fetch books when user role is loaded
   useEffect(() => {
-    if (!isRoleLoading && userEmail) {
+    if (!isRoleLoading && userId) {
       fetchBorrowedBooks();
     }
-  }, [isRoleLoading, userEmail, isAdmin, isStaff]);
+  }, [isRoleLoading, userId, isAdmin, isStaff]);
 
   const handleReturn = async (bookId: string, bookName: string) => {
     // Only admins/staff can return books

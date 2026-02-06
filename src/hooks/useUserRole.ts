@@ -11,6 +11,7 @@ interface UserRoleState {
   isAdmin: boolean;
   isStaff: boolean;
   userEmail: string | null;
+  userId: string | null;
 }
 
 export const useUserRole = () => {
@@ -21,6 +22,7 @@ export const useUserRole = () => {
     isAdmin: false,
     isStaff: false,
     userEmail: null,
+    userId: null,
   });
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export const useUserRole = () => {
             isAdmin: false,
             isStaff: false,
             userEmail: null,
+            userId: null,
           });
         }
         return;
@@ -70,6 +73,7 @@ export const useUserRole = () => {
           isAdmin: roles.includes('admin'),
           isStaff: roles.includes('staff') || roles.includes('admin'),
           userEmail: session.user.email || null,
+          userId: session.user.id,
         });
       }
     };

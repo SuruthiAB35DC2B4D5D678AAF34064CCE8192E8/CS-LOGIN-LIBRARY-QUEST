@@ -52,41 +52,58 @@
    - `useUserRole` hook - checks user's role from database
    - `useUserProfile` hook - manages user profile data
 
-## ⚠️ PENDING - Phase 5: Additional Security Features (User Action Required)
+## ✅ COMPLETED - Phase 5: Enhanced Security with user_id
+
+1. ✅ **Added user_id column to borrowed_books and chat_messages**
+   - Both tables now use user_id for RLS instead of email-based matching
+   - This prevents enumeration attacks and ensures proper identity verification
+
+2. ✅ **Updated RLS policies to use user_id = auth.uid()**
+   - `borrowed_books`: SELECT, INSERT, UPDATE now use user_id
+   - `chat_messages`: SELECT, INSERT, UPDATE, DELETE now use user_id
+   - Added DELETE policies for data management
+
+3. ✅ **Updated frontend code**
+   - `useUserRole` hook now exposes userId
+   - `BookBorrow.tsx` includes user_id in insert operations
+   - `ReturnBook.tsx` fetches using user_id context
+
+## ⚠️ PENDING - Phase 6: User Action Required
 
 1. ⚠️ **Enable leaked password protection**
    - Status: PENDING - Requires user action in Lovable Cloud settings
    - Go to: Settings → Auth → Enable "Leaked password protection"
 
-2. ✅ **Email verification**
-   - Auto-confirm email is disabled (users must verify email)
-
 ## Summary of Security Improvements
 
 | Component | Before | After |
 |-----------|--------|-------|
-| `borrowed_books` SELECT | Anyone can read all | Students see own records only, admins/staff see all |
-| `borrowed_books` INSERT | Anyone can insert any data | Only authenticated users with matching email |
-| `borrowed_books` UPDATE | Anyone can update any record | Only admins/staff can mark returns |
-| `chat_messages` SELECT | Anyone can read all | Users see their conversations only |
-| `chat_messages` INSERT | Anyone can impersonate admin | `is_admin` only true if user has admin role |
-| `chat_messages` UPDATE | Anyone can edit any message | Only `is_read` field, own messages only |
-| User Roles | Not implemented | Role-based access control with `has_role()` function |
-| User Profiles | Not linked to auth | Profiles linked to authenticated users |
+| `borrowed_books` SELECT | Email-based matching | user_id = auth.uid() |
+| `borrowed_books` INSERT | Email verification only | user_id = auth.uid() required |
+| `borrowed_books` UPDATE | Admin/staff role check | Admin/staff role check |
+| `borrowed_books` DELETE | Not allowed | Admin only |
+| `chat_messages` SELECT | Email + is_admin check | user_id = auth.uid() |
+| `chat_messages` INSERT | Email + admin role check | user_id = auth.uid() |
+| `chat_messages` UPDATE | Email-based | user_id = auth.uid() |
+| `chat_messages` DELETE | Not allowed | user_id = auth.uid() |
+| `profiles` DELETE | Not allowed | user_id = auth.uid() |
+| User Roles | Implemented | Working with has_role() function |
+| Password Security | Leaked check OFF | Pending user action |
 
 ## New Database Schema
 
-### Tables Created
-- `user_roles` - Stores user roles (admin, staff, student)
-- `profiles` - Stores student details linked to auth users
+### Columns Added
+- `borrowed_books.user_id` - UUID referencing auth.users
+- `chat_messages.user_id` - UUID referencing auth.users
 
-### Functions Created
-- `has_role(user_id, role)` - Security definer function to check user roles safely
+### RLS Policies Updated
+- All policies now use `user_id = auth.uid()` for secure identity verification
+- DELETE policies added for data management
 
-### Hooks Created
-- `useUserRole` - Returns user session, roles, and admin/staff status
-- `useUserProfile` - Manages user profile data
+### Frontend Updates
+- `useUserRole` hook returns `userId` for use in queries
+- All database operations include `user_id` field
 
 ## Remaining Action Item
 
-To complete the security hardening, enable **Leaked Password Protection** in your Lovable Cloud settings.
+⚠️ **Enable Leaked Password Protection** in your Lovable Cloud auth settings.
