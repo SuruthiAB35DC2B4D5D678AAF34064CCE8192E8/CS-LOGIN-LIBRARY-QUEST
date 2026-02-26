@@ -535,16 +535,6 @@ export const HomePage = () => {
                   Get instant help from our AI librarian assistant
                 </p>
                 <div className="border-t border-border pt-3 mt-3">
-                  <div 
-                    className="flex items-center space-x-3 cursor-pointer hover:bg-accent/10 p-2 rounded-lg transition-smooth"
-                    onClick={() => window.open('https://wa.me/918234567890?text=Hello,%20I%20need%20help%20with%20library%20services', '_blank')}
-                  >
-                    <MessageCircle className="h-4 w-4 text-green-500" />
-                    <div>
-                      <p className="font-medium text-foreground">WhatsApp Support</p>
-                      <p className="text-sm text-muted-foreground">Chat with library staff</p>
-                    </div>
-                  </div>
                   <div className="flex items-center space-x-3 p-2">
                     <Users className="h-4 w-4 text-primary" />
                     <div>
