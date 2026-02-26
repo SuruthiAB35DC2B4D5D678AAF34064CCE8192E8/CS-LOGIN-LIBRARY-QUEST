@@ -237,7 +237,7 @@ export const LoginForm = () => {
                   <button
                     type="button"
                     className="text-primary hover:text-primary-hover transition-fast font-medium"
-                    onClick={() => toast({ title: "Feature coming soon", description: "Password reset will be available soon." })}
+                    onClick={() => navigate("/forgot-password")}
                   >
                     Forgot password?
                   </button>
