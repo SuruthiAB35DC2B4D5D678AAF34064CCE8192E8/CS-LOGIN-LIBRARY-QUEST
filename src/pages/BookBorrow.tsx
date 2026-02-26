@@ -169,20 +169,12 @@ const BookBorrow = () => {
         throw error;
       }
 
-      // Simulate sending book link via email
-      const bookLink = `https://library.mmecollege.org/books/${data.bookName.toLowerCase().replace(/\s+/g, '-')}`;
-      
       toast({
         title: "Book Borrowing Request Approved!",
         description: `Hi ${data.studentName}, your request for "${data.bookName}" has been approved. The digital book link has been sent to ${userEmail}. Return by: ${endDate ? format(endDate, "PPP") : ""}`,
       });
 
-      // Simulate email sending
-      console.log("Sending email to:", userEmail);
-      console.log("Book link:", bookLink);
-      console.log("Student details:", submissionData);
-      
-      // Show confirmation with book link
+      // Show confirmation
       setTimeout(() => {
         toast({
           title: "Email Sent Successfully!",
