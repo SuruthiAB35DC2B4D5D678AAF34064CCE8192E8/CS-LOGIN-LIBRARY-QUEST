@@ -10,6 +10,8 @@ import BookBorrow from "./pages/BookBorrow";
 import ReturnBook from "./pages/ReturnBook";
 import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/book-borrow" element={<ProtectedRoute><BookBorrow /></ProtectedRoute>} />
           <Route path="/return-book" element={<ProtectedRoute><ReturnBook /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
