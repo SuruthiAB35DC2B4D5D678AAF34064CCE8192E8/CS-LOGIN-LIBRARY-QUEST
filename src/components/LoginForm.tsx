@@ -97,12 +97,6 @@ export const LoginForm = () => {
             description: "Welcome to MMES College Library.",
           });
           navigate('/home');
-        } else {
-          toast({
-            title: "Account created!",
-            description: "You can now sign in with your credentials.",
-          });
-          setIsSignUp(false);
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
