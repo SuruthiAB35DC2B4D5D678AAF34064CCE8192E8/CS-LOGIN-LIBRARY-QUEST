@@ -433,12 +433,19 @@ export const HomePage = () => {
                   Borrow a Book
                 </Button>
                 <Button 
-                  onClick={() => window.location.href = '/return-book'}
+                  onClick={() => navigate('/return-book')}
                   variant="outline"
                   className="w-full font-semibold h-12 text-base border-primary text-primary hover:bg-primary/10"
                 >
                   <BookCheck className="h-5 w-5 mr-2" />
                   Return a Book
+                </Button>
+                <Button 
+                  onClick={() => navigate('/digital-library')}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-glow font-semibold h-12 text-base"
+                >
+                  <Database className="h-5 w-5 mr-2" />
+                  E-Books / Digital Library
                 </Button>
               </CardContent>
             </Card>
