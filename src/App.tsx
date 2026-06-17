@@ -10,6 +10,7 @@ import BookBorrow from "./pages/BookBorrow";
 import ReturnBook from "./pages/ReturnBook";
 import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
+import { DigitalLibrary } from "./pages/DigitalLibrary";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -29,6 +30,8 @@ const App = () => (
           <Route path="/book-borrow" element={<ProtectedRoute><BookBorrow /></ProtectedRoute>} />
           <Route path="/return-book" element={<ProtectedRoute><ReturnBook /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/digital-library" element={<ProtectedRoute><DigitalLibrary /></ProtectedRoute>} />
+          <Route path="/e-books" element={<ProtectedRoute><DigitalLibrary /></ProtectedRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
