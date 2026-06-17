@@ -91,13 +91,18 @@ export const LoginForm = () => {
           return;
         }
 
+        // Sign out so the user must sign in with their new credentials
         if (data.session) {
-          toast({
-            title: "Account created!",
-            description: "Welcome to MMES College Library.",
-          });
-          navigate('/home');
+          await supabase.auth.signOut();
         }
+        toast({
+          title: "Account created!",
+          description: "Please sign in with your email and password.",
+        });
+        setIsSignUp(false);
+        setPassword("");
+        setIsLoading(false);
+        return;
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
